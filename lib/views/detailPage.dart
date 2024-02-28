@@ -11,7 +11,10 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
-  late Map<String, dynamic> country = {};
+  var country;
+  late String capital = '';
+  late String flag = '';
+  late double area = 0.0;
 
   @override
   void initState() {
@@ -22,40 +25,52 @@ class _DetailPageState extends State<DetailPage> {
 
   // Méthode pour récupérer les données du pays
   Future<void> _fetchCountryData() async {
-    try {
-      final data = await getCountryData(widget.countryName);
-      setState(() {
-        country = data;
-      });
-    } catch (error) {
-      print('Erreur lors de la récupération des données du pays: $error');
-      // Gérer l'erreur selon vos besoins (affichage d'un message d'erreur, etc.)
-    }
+    final data = await getCountryData(widget.countryName);
+    setState(() {
+      country = data;
+      print(data);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Détails du pays'),
+        title: Text('Country details'),
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Détails du pays pour :',
-              style: TextStyle(fontSize: 20),
+            Image.network(
+              country['flags']['png'],
+              height: 100,
+              fit: BoxFit.contain,
             ),
-            SizedBox(height: 10),
             Text(
-              widget.countryName,
+              '${country['name']['common']}',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            // Afficher les détails du pays récupérés ici
-            // Par exemple, vous pouvez afficher des détails spécifiques du pays à partir de la variable country
-            // Exemple : Text('Capitale : ${country['capital']}'),
+            Text(
+              'Capital : ${country['capital'][0]}',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Population : ${country['population'].toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ' ')} inhabitants',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Area : ${country['area'].toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ' ')} km²',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Region : ${country['region']}' + ' (${country['subregion']})',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'UN Member : ${country['unMember'] ? 'Yes' : 'No'}',
+              style: TextStyle(fontSize: 16),
+            ),
           ],
         ),
       ),
@@ -65,10 +80,6 @@ class _DetailPageState extends State<DetailPage> {
 
 // Méthode pour récupérer les données du pays
 Future<Map<String, dynamic>> getCountryData(String countryName) async {
-  try {
-    final response = await Dio().get('https://restcountries.com/v3.1/name/' + countryName);
-    return response.data[0];
-  } catch (error) {
-    throw Exception('Impossible de récupérer les données du pays');
-  }
+  final response = await Dio().get('https://restcountries.com/v3.1/name/' + countryName);
+  return response.data[0];
 }
